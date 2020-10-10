@@ -104,6 +104,27 @@ The five sample images are shown below, along with respective descriptions taken
 
 ![Sample Images][sample_images]
 
+The following code is used to calculate average brightness and average contrast of each image. they are summarized along with image shapes.
+
+```
+shapes = [img.shape for img in images]
+brightness = []
+contrast = []
+for img in images:
+    hsv = img.copy()
+    b = np.mean(hsv[:,:,2])
+    brightness.append('{:.1f}%'.format(b * 100 / 255))
+    lab = cv2.cvtColor(img, cv2.COLOR_RGB2LAB)
+    L, A, B = cv2.split(lab)
+    kernel = np.ones((5, 5), np.uint8)
+    minv = (cv2.erode(L, kernel, iterations=1)).astype(np.float32)
+    maxv = (cv2.dilate(L, kernel, iterations=1)).astype(np.float32)
+    c = np.mean((maxv - minv) / (maxv + minv))
+    contrast.append('{:.1f}%'.format(c * 100))
+```
+
+The shape (3-channel 32 x 32) is identical to the ones received by the LeNet model. In fact, the images were already adjusted in size by the owner of the repo where I downloaded the images for the same purpose. Average brightness of images ranges from 51% to 73%, which should be fine for testing the classifier. Average contrast is within 22% - 48%, which should be also good.
+
 ### Prediction
 
 Prediction is done by using `tensorflow.nn.top_k`, whose results will be used in the next step in analyzing the top 5 predictions for each sample image. Sample images go through the same preprocessing as in training, and then fed into the trained model.
